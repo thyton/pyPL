@@ -8,7 +8,7 @@ import numpy as np
 class testSentence(unittest.TestCase):
 	def test_table(self):
 		print(AtomicSentence([True,False]).table())
-	def test_condition(self):
+	def test_set(self):
 		print(AtomicSentence().set(False).val())
 
 if __name__ == '__main__':
