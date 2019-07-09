@@ -1,8 +1,9 @@
 from enum import Enum
 
 class Conn(Enum):
-	NOT = 0
-	AND = 1
-	OR = 2
-	IMP = 3 # implies
-	IFF =
+	"""An Enumeration for logical connectives in propositional logic"""
+	NOT = 1
+	AND = 2
+	OR =  3
+	IMP = 4 # implies
+	IFF = 5
