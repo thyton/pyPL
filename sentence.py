@@ -3,7 +3,10 @@ sentence.py
 Defines sentence 
 """
 import numpy as np
-import copy 
+import copy
+import sys
+sys.path.append('../../../')
+from pyPL.literal import Literal
 
 class AtomicSentence:
 	"""An atomic sentence consists of 
@@ -15,80 +18,118 @@ class AtomicSentence:
 	"""
 
 	def __init__(self, positive = None, symbol = None):
-		try:
-			assert(isinstance(positive, bool))
-			self._p = positive
-		except:
-			print("'positive' is not a bool type.")
-
-		try:
-			assert(symbol is not None and isinstance(symbol, str))
-			self._s = symbol
-			if self._s == "True":
-				self._p = True
-				self._t = np.array(True)
-			elif self._s == "False":
-				self._p = True
-				self._t = np.array(False)
-			else:
-				self._t = np.array([True, False])
-		except:
-			print("No string symbol for the proposition is given")
+		self.l = Literal(positive, symbol)
+		if self.l.equalSymbol("True") or self.l.equalSymbol("False"):
+			self.t = np.array(True)
+		else:
+			self.t = np.array([True, False])
 
 	def table(self):
-		return self._t
+		return self.t
 
 	def set(self, val):
 		cp = copy.deepcopy(self)
-		cp._t = np.array(val)
+		cp.t = np.array(val)
 		return cp
 
-	# magic	
-	def __str__(self):
-		# neg = bytes.decode(172)
-		neg = "-"
-		return self._s if self._p else neg + self._s
+	def setSymbol(self, symbol):
+		self.l.setSymbol(symbol)
 
-	def __not__(self):
-		cp = Sentence(cp)
-		cp = not cp
-		return cp
+	# logical connectives
+	def cAnd (self, other):
+		cpSelf = Sentence(self)
+		cpOther = Sentence(copy.deepcopy(other))
+		cpSelf.cAnd(cpOther)
+		return cpSelf
+
+	def cOr (self, other):
+		cpSelf = Sentence(self)
+		cpOther = Sentence(copy.deepcopy(other))
+		cpSelf.cOr(cpOther)
+		return cpSelf
+
+	def cImp(self, other):
+		cpSelf = Sentence(self)
+		cpOther = Sentence(copy.deepcopy(other))
+		cpSelf.cImp(cpOther)
+		return cpSelf
+
+	def cIff(self, other):
+		cpSelf = Sentence(self)
+		cpOther = Sentence(copy.deepcopy(other))
+		cpSelf.cIff(cpOther)
+		return cpSelf		
 
 	# fake method to test if an object is of AtomicSentence
 	def atom(self):
 		return 
 
-import pyPL.connective
+	# magic	
+	def __str__(self):
+		# neg = bytes.decode(172)
+		return str(self.l)
+
+	def __invert__(self):
+		cp = Sentence(self)
+		cp = ~cp
+		return cp
+
+from  pyPL.connective import *
 
 class Sentence(AtomicSentence):
 	pass
 	def __init__(self, obj):
 		try:
 			obj.atom()
-			self._p = obj._p	# is positive
-			self._s = obj._s   # symbol
-			self._t = obj._t   # truth table
+			self.l = obj.l
 
-			try:
-				obj.complex()
-				self._pns = obj._pns	# a queue that represents postfix notation string of of the complex sentence
-			except:
-				self._pns = [obj._pns]
-		except:
-			print("Argument 'obj' is not an instance of AtomicSentence")
+		except AttributeError as e:
+			print("'obj' is not an instance of AtomicSentence")
 	
+		if isinstance(obj, Sentence):
+			self.pns = obj.pns	# a queue that represents postfix notation string of of the complex sentence
+		else:
+			self.pns = []
+			self.pns.append(self.l)
+
+	# logical connectives
+	def cAnd (self, other):
+		self.pns.extend(other.pns)
+		self.pns.append(Conn.AND)
+		return self
+
+	def cOr (self, other):
+		self.pns.extend(other.pns)
+		self.pns.append(Conn.OR)
+		return
+
+	def cImp(self, other):
+		self.pns.extend(other.pns)
+		self.pns.append(Conn.IMP)
+		return
+
+	def cIff(self, other):	
+		self.pns.extend(other.pns)
+		self.pns.append(Conn.IFF)
+		return	
+
 	# magic - some logical connectives
+	def __str__(self):
+		# include the literal ? 
+		# but needs to manually enter the literal
+		# that doesnt conflict with the current literals
+		s = [str(e) for e in self.pns]
+		return str(s)
 
-
-	# overriden __not__ from the base class
-	def __not__():
-		self = not self._p
-		self._pns += Conn.NOT
-		print(self._pns)
+	# operator NOT
+	def __invert__(self):
+		self.pns.append(Conn.NOT)
+		return self
 
 	# fake method to test if an objec is of Sentence
 	def complex(self):
 		return
+
 
 
 
