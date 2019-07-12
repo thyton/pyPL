@@ -45,5 +45,51 @@ class testAtomicSentence(unittest.TestCase):
 		a = s.cIff(s)
 		print(a)
 
+	def test_combination(self):
+		p = AtomicSentence(True, "p")
+		not_p = ~p
+		print(p)
+		print(not_p)
+
+		q = AtomicSentence(True, "q")
+		p_imp_q = p.cImp(q)
+		print(p_imp_q)
+
+		r = AtomicSentence(True, "r")
+		n_p_or_r = not_p.cOr(r)
+		print(n_p_or_r)
+
+		print(p_imp_q.cIff(n_p_or_r))
+
+	def test_replaceIff(self):
+		p = AtomicSentence(True, "p")
+		not_p = ~p
+
+		q = AtomicSentence(True, "q")
+		p_imp_q = p.cImp(q)
+
+		r = AtomicSentence(True, "r")
+		n_p_or_r = not_p.cOr(r)
+
+		s = p_imp_q.cIff(n_p_or_r)
+		print(s)
+		s.replaceIff()
+		print(s)
+
+
+	def test_replaceImp(self):
+		p = AtomicSentence(True, "p")
+		not_p = ~p
+
+		q = AtomicSentence(True, "q")
+		p_iff_q = p.cIff(q)
+
+		r = AtomicSentence(True, "r")
+		n_p_or_r = not_p.cOr(r)
+
+		s = p_iff_q.cImp(n_p_or_r)
+		print(s)
+		s.replaceImp()
+		print(s)	
 if __name__ == '__main__':
     unittest.main(verbosity = 2)

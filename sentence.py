@@ -39,6 +39,7 @@ class AtomicSentence:
 	def cAnd (self, other):
 		cpSelf = Sentence(self)
 		cpOther = Sentence(copy.deepcopy(other))
+		print(type(cpOther))
 		cpSelf.cAnd(cpOther)
 		return cpSelf
 
@@ -74,10 +75,9 @@ class AtomicSentence:
 		cp = ~cp
 		return cp
 
-from  pyPL.connective import *
-
-class Sentence(AtomicSentence):
-	pass
+from pyPL.connective import *
+from pyPL.pns import PNS 
+class Sentence:
 	def __init__(self, obj):
 		try:
 			obj.atom()
@@ -91,27 +91,40 @@ class Sentence(AtomicSentence):
 		else:
 			self.pns = []
 			self.pns.append(self.l)
+			print(self.pns)
 
 	# logical connectives
 	def cAnd (self, other):
-		self.pns.extend(other.pns)
+		cpOther = other
+		if not isinstance(other, Sentence):
+			cpOther = Sentence(copy.deepcopy(other))
+		self.pns.extend(cpOther.pns)
 		self.pns.append(Conn.AND)
 		return self
 
 	def cOr (self, other):
-		self.pns.extend(other.pns)
+		cpOther = other
+		if not isinstance(other, Sentence):
+			cpOther = Sentence(copy.deepcopy(other))
+		self.pns.extend(cpOther.pns)
 		self.pns.append(Conn.OR)
-		return
+		return self
 
 	def cImp(self, other):
-		self.pns.extend(other.pns)
+		cpOther = other
+		if not isinstance(other, Sentence):
+			cpOther = Sentence(copy.deepcopy(other))
+		self.pns.extend(cpOther.pns)
 		self.pns.append(Conn.IMP)
-		return
+		return self
 
 	def cIff(self, other):	
-		self.pns.extend(other.pns)
+		cpOther = other
+		if not isinstance(other, Sentence):
+			cpOther = Sentence(copy.deepcopy(other))
+		self.pns.extend(cpOther.pns)
 		self.pns.append(Conn.IFF)
-		return	
+		return self
 
 	# magic - some logical connectives
 	def __str__(self):
@@ -126,15 +139,64 @@ class Sentence(AtomicSentence):
 		self.pns.append(Conn.NOT)
 		return self
 
-	# fake method to test if an objec is of Sentence
-	def complex(self):
+	def cnf(self):
+		# eliminate Iff
+		replaceIff(self)
+		# eliminate Imp
+
+		# move Not inwards to make negative literals
+			
+		form = [] #list of all clauses - a disjunction of literals - in CNF
+		stack = []
+		i = 0
+		while i < len(self.pns):
+		# skim from left to right
+			# distribute and 
+			return form
+		return None
+
+	def replaceIff(self):
+		if len(self.pns) > 0:
+			stack = []
+			i = 0
+			while i < len(self.pns):
+			# skim from left to right
+				if not isinstance(self.pns[i], Conn):
+					stack.append((i,i+1))
+					i +=1
+				elif self.pns[i] == Conn.IFF and len(stack) > 1:
+					PNS.replaceIff(self.pns, stack, i)
+					i = stack[-1][1]
+				else:
+					PNS.combineOperands(self.pns, stack, i)
+					i += 1
+
+	def replaceImp(self):
+		if len(self.pns) > 0:
+			stack = []
+			i = 0
+			while i < len(self.pns):
+			# skim from left to right
+				if not isinstance(self.pns[i], Conn):
+					stack.append((i,i))
+					i +=1
+				elif self.pns[i] == Conn.IMP and len(stack) > 1:
+					PNS.replaceImp(self.pns, stack, i)
+					i = stack[-1][1]
+				else:
+					PNS.combineOperands(self.pns, stack, i)
+					i += 1
+		
+	def inwardNot(self):
+		stack = []
+		i = 0
+		while i < len(self.pns):
+		# skim from left to right
+			return
+	def distAnd(self):
 		return
 
-
-
-
-
-
+	# p', 'q', 'imp', 'p', 'not', 'r', 'or', 'iff'
 
 
 
