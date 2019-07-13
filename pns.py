@@ -6,12 +6,12 @@ from pyPL.sentence import *
 class PNS:
 	def pr(l):
 		return [str(i) for i in l]
+
 	def replaceIff(s, stack, o):
 		"""Replace p Iff q by (p implies q) and (q implies p)
 		in postfix notation string
-		self: a pns list
-		p:  [start index, end index) of p
-		q:  [start index, end index) of q
+		s: a pns list
+		stack: stack of operands before o
 		o:  iff index 
 		"""
 		q = stack.pop()
@@ -32,10 +32,9 @@ class PNS:
 	def replaceImp(s, stack, o):
 		"""Replace p Imp q by (not p or q)
 		in postfix notation string
-		self: a pns list
-		p:  [start index, end index) of p
-		q:  [start index, end index) of q
-		o:  iff index 
+		s: a pns list
+		stack: stack of operands before o
+		o:  imp index 
 		"""
 		q = stack.pop()
 		p = stack.pop()
@@ -50,17 +49,51 @@ class PNS:
 		s[p[0]:o+1] = r
 		stack.append(i)
 
-	def inwardNot(s, stack, o):
+	def elim2Neg(s, stack, o):
 		"""Replace not p by negative literal not p
-		self: a pns list
-		p:  [start index, end index) of p
-		o:  iff index 
-
-		Applying De Morgan's Law when needed
+		s: a pns list
+		stack: stack of operands before o
+		o: right most operator NOT index 
 		"""
+		s.pop(o)
+		s.pop(o)
+
+	def deMorgan(s, stack, o, connective):
+		"""Apply De Morgan's Law 
+		s: a pns list
+		stack: stack of operands before o
+		o: current operator index 
+		connective: the resulting connective after De Morgan
+		"""
+		q = stack.pop()
+		p = stack.pop()
+		r = [] # replacement
+		r += s[p[0]:p[1]]
+		r.append(Conn.NOT)
+		r += s[q[0]:q[1]]
+		r.append(Conn.NOT)
+		r.append(connective)
+		s[p[0]:o+1] = r
+		i = (p[0], p[0] + len(r))
+		stack.append(i)
+
+	def toNegLiteral(s, stack, o):	
+		"""Apply De Morgan's Law 
+		s: a pns list
+		stack: stack of operands before o
+		o: current operator index 
+		connective: the resulting connective after De Morgan
+		"""
+		s[p[0]] = ~s[p[0]]
+		s.pop(o)
+		stack.append(i)
 
 	def distOr(s, stack, o):
-		"""Distribute or over and"""
+		"""Distribute or over and
+		s: a pns list
+		stack: stack of operands before o
+		o: or index 
+		"""
 
 	def combineOperands(s, stack, o):
 		"""Distribute or over and"""
