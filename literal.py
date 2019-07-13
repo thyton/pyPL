@@ -57,7 +57,7 @@ class Literal:
 		# cp.p = not self.p
 		# return cp
 		self.p = not self.p
-		return self.p
+		return self
 
 	def __eq__(self, other):
 		return self.s == other.s and self.p == self.p
