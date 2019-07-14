@@ -2,10 +2,12 @@ import sys
 sys.path.append('../../')
 
 from pyPL.sentence import AtomicSentence
+from pyPL.sentence import Sentence
+
 import unittest
 import numpy as np 
 
-class testAtomicSentence(unittest.TestCase):
+class testSentence(unittest.TestCase):
 	def test_table(self):
 		print(AtomicSentence(True, "p").table())
 
@@ -91,5 +93,32 @@ class testAtomicSentence(unittest.TestCase):
 		print(s)
 		s.replaceImp()
 		print(s)	
+
+	def test_inwardNot(self):
+		p = AtomicSentence(True, "p")
+		not_p = ~p
+
+		q = AtomicSentence(True, "q")
+		q = not_p.cAnd(q)
+		print(q)
+		q = ~q
+		q = ~q
+		q = ~q
+		q_cnf = q.cnf()
+		
+		print(repr(q_cnf))
+		# print(q)
+		# q.inwardNot()
+		# print(q)
+
+		# not_p = ~p
+		# q = AtomicSentence(True, "q")
+		# q = not_p.cOr(q)
+		# print(q)
+		# q = ~q
+		# print(q)
+
+		# s.replaceImp()
+		# print(s)	
 if __name__ == '__main__':
     unittest.main(verbosity = 2)
