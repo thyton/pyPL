@@ -40,22 +40,22 @@ class Node:
 	def inwardNeg(self):
 		if isinstance(self.root, Conn):
 			if hasattr(self, 't1'): 
+				# when the root is NOT
 				if isinstance(self.t1.root, Conn) and self.root == Conn.NOT:
+					# 2 consecutive NOTs
 					if self.t1.root == Conn.NOT: 
 						self = self.t1.t1 
-						self = self.elim2Neg()
+						self = self.inwardNeg()
+					# NOT - AND using De Morgan's Law	
 					elif self.t1.root == Conn.AND:
-						print(type(self.t1.root))
-						print(self.root)
-						print(self.t1.root)
-						print(type(self.t1.t1))
 						self.t1.root = Conn.OR
 						d = {'t1':self.t1.t1,'root':Conn.NOT}
 						self.t1.t1 = Node(**d)
 						d = {'t1':self.t1.t2,'root':Conn.NOT}
 						self.t1.t2 = Node(**d)
 						self = self.t1 
-						self = self.elim2Neg()
+						self = self.inwardNeg()
+					# NOT - OR using De Morgan's Law	
 					else:
 						self.t1.root = Conn.AND
 						d = {'t1':self.t1.t1,'root':Conn.NOT}
@@ -63,15 +63,13 @@ class Node:
 						d = {'t1':self.t1.t2,'root':Conn.NOT}
 						self.t1.t2 = Node(**d)
 						self = self.t1 
-						self = self.elim2Neg()
+						self = self.inwardNeg()
 				else:
-					self.t1.elim2Neg()	
-
+				# when the isn't NOT	
+					self.t1 = self.t1.inwardNeg()	
 			if hasattr(self, 't2'):
-				self.t2.elim2Neg()				
+				self.t2 = self.t2.inwardNeg()			
 		return self
-
-		return
 
 	def elim2Neg(self):
 		if isinstance(self.root, Conn):
@@ -85,7 +83,6 @@ class Node:
 					self = self.elim2Neg()
 				else:
 					self.t1.elim2Neg()	
-
 			if hasattr(self, 't2'):
 				self.t2.elim2Neg()				
 		return self
@@ -111,7 +108,7 @@ class ExpTree:
 		self.root = node
 
 	def cnf(self):
-		self.root = self.root.elim2Neg()
+		self.root = self.root.inwardNeg()
 				 # = Literal(True, "s")
 		return self
 
