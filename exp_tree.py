@@ -31,21 +31,52 @@ class Node:
 		return cp
 
 	def replaceIff(self):
-		if self.root:
-			return
+		"""Replace all α IFF β by (α IMP β) AND (β IMP α) """
+		if isinstance(self.root, Conn):
+			# when root is IFF	
+			if self.root == Conn.IFF:
+				self.root = Conn.AND
+				d = {'t1':self.t1.clone(),'root':Conn.IMP,'t2':self.t2.clone()}
+				newT1 = Node(**d)
+				d = {'t1':self.t2.clone(),'root':Conn.IMP,'t2':self.t1.clone()}
+				self.t2 = Node(**d)
+				self.t1 = newT1
+				self = self.replaceIff()
+			else:
+			# when root isn't IFF	
+				self.t1 = self.t1.replaceIff()	
+			if hasattr(self, 't2'):
+				self.t2 = self.t2.replaceIff()			
+		return self
 
 	def replaceImp(self):
-		return
-
-	def inwardNeg(self):
+		""" Replace all α IMP β by not α OR β """
 		if isinstance(self.root, Conn):
-			if hasattr(self, 't1'): 
-				# when the root is NOT
-				if isinstance(self.t1.root, Conn) and self.root == Conn.NOT:
+			# when root is IMP	
+			if self.root == Conn.IMP:
+				self.root = Conn.OR
+				d = {'t1':self.t1,'root':Conn.NOT}
+				self.t1= Node(**d)
+				self = self.replaceImp()
+			else:
+			# when root isn't IMP
+				self.t1 = self.t1.replaceImp()	
+			if hasattr(self, 't2'):
+				self.t2 = self.t2.replaceImp()			
+		return self
+
+	def inwardNot(self):
+		""" Move NOT inwards
+			NOT NOT α = α 
+			Apply De Morgan's Law to NOT (α OR β) , NOT (α AND β)"""
+		if isinstance(self.root, Conn):
+			# when the root is NOT
+			if self.root == Conn.NOT:
+				if isinstance(self.t1.root, Conn):
 					# 2 consecutive NOTs
 					if self.t1.root == Conn.NOT: 
 						self = self.t1.t1 
-						self = self.inwardNeg()
+						self = self.inwardNot()
 					# NOT - AND using De Morgan's Law	
 					elif self.t1.root == Conn.AND:
 						self.t1.root = Conn.OR
@@ -54,7 +85,7 @@ class Node:
 						d = {'t1':self.t1.t2,'root':Conn.NOT}
 						self.t1.t2 = Node(**d)
 						self = self.t1 
-						self = self.inwardNeg()
+						self = self.inwardNot()
 					# NOT - OR using De Morgan's Law	
 					else:
 						self.t1.root = Conn.AND
@@ -63,53 +94,72 @@ class Node:
 						d = {'t1':self.t1.t2,'root':Conn.NOT}
 						self.t1.t2 = Node(**d)
 						self = self.t1 
-						self = self.inwardNeg()
-				else:
-				# when the isn't NOT	
-					self.t1 = self.t1.inwardNeg()	
-			if hasattr(self, 't2'):
-				self.t2 = self.t2.inwardNeg()			
+						self = self.inwardNot()
+			else:
+			# when root isn't NOT	
+				self.t1 = self.t1.inwardNot()	
+				self.t2 = self.t2.inwardNot()			
 		return self
 
-	def elim2Neg(self):
+	def distOr(self):
+		""" Distribute OR over AND using Distributivity Law """
 		if isinstance(self.root, Conn):
-			if hasattr(self, 't1'): 
-				if isinstance(self.t1.root, Conn) and self.root == Conn.NOT and self.t1.root == Conn.NOT: 
-					# print(type(self.t1.root))
-					# print(self.root)
-					# print(self.t1.root)
-					# print(type(self.t1.t1))
-					self = self.t1.t1 
-					self = self.elim2Neg()
-				else:
-					self.t1.elim2Neg()	
+			# when the root is OR
+			if self.root == Conn.OR:
+				# root - left subtree = OR - AND using Distributivity Law
+				if isinstance(self.t1.root, Conn) and self.t1.root == Conn.AND:
+					self.root = Conn.AND
+					d = {'t1':self.t1.t1.clone(),'root':Conn.OR, 't2':self.t2.clone()}
+					newT1 = Node(**d)
+					d = {'t1':self.t1.t2.clone(),'root':Conn.OR, 't2':self.t2.clone()}
+					self.t2 = Node(**d)
+					self.t1 = newT1
+
+				elif isinstance(self.t2.root, Conn) and self.t2.root == Conn.AND:
+					self.root = Conn.AND
+					d = {'t1':self.t1.clone(), 'root':Conn.OR, 't2':self.t2.t1.clone()}
+					newT1 = Node(**d)
+					d = {'t1':self.t1.clone(), 'root':Conn.OR, 't2':self.t2.t2.clone()}
+					self.t2 = Node(**d)
+					self.t1 = newT1
+
+			# recursively call it one subtrees
+			self.t1 = self.t1.distOr()	
 			if hasattr(self, 't2'):
-				self.t2.elim2Neg()				
+				self.t2 = self.t2.distOr()			
+		
 		return self
+	
 
 class ExpTree:
 	def __init__(self, pns):
-		stack = []
-		i = 0
-		while i < len(pns):
-			if not isinstance(pns[i], Conn):
-				d = {'root':pns[i]}
-			elif pns[i] == Conn.NOT:
-				t1 = stack.pop()
-				d = {'t1':t1,'root':pns[i]}
-			else :
-				t2 = stack.pop()
-				t1 = stack.pop()
-				d = {'t1':t1, 't2':t2, 'root':pns[i]}
+		if len(pns) > 0:
+			stack = []
+			i = 0
+			while i < len(pns):
+				if not isinstance(pns[i], Conn):
+					d = {'root':pns[i]}
+				elif pns[i] == Conn.NOT:
+					t1 = stack.pop()
+					d = {'t1':t1,'root':pns[i]}
+				else :
+					t2 = stack.pop()
+					t1 = stack.pop()
+					d = {'t1':t1, 't2':t2, 'root':pns[i]}
 
-			node = Node(**d)
-			stack.append(node)	
-			i += 1
-		self.root = node
+				node = Node(**d)
+				stack.append(node)	
+				i += 1
+			self.root = node
+		else:
+			self = None
+			print("PNS is empty")
 
 	def cnf(self):
-		self.root = self.root.inwardNeg()
-				 # = Literal(True, "s")
+		self.root = self.root.replaceIff()
+		self.root = self.root.replaceImp()
+		self.root = self.root.inwardNot()
+		self.root = self.root.distOr()
 		return self
 
 	def __str__(self):
