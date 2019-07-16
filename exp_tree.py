@@ -129,7 +129,36 @@ class Node:
 				self.t2 = self.t2.distOr()			
 		
 		return self
-	
+
+	def parseCNFClauses(self, clauses, isRootOR):
+		""" Return a list of conjunctive clauses
+			Each clause is a list of literals
+			Assumming the calling object is in CNF, that there're 3 operators NOT, AND, OR
+		"""
+		if isinstance(self.root, Conn):				
+			if self.root == Conn.AND:
+				leftClauses = self.t1.parseCNFClauses([], isRootOR)
+				rightClauses = self.t2.parseCNFClauses([], isRootOR)
+				clauses.extend(leftClauses)
+				clauses.extend(rightClauses)
+				return clauses
+			elif self.root == Conn.OR:
+				if isRootOR:
+					return self.t1.parseCNFClauses([], isRootOR) + self.t2.parseCNFClauses([], isRootOR)
+				else:
+					isRootOR = True
+					return [self.t1.parseCNFClauses([], isRootOR) + self.t2.parseCNFClauses([], isRootOR)]
+			else:
+				if isRootOR:
+					return [~copy.deepcopy(self.t1.root)]
+				else:
+					return [[~copy.deepcopy(self.t1.root)]]
+		else:
+			if isRootOR:
+				return [copy.deepcopy(self.root)]
+			else:
+				return [[copy.deepcopy(self.root)]]
+
 
 class ExpTree:
 	def __init__(self, pns):
@@ -153,14 +182,14 @@ class ExpTree:
 			self.root = node
 		else:
 			self = None
-			print("PNS is empty")
 
 	def cnf(self):
 		self.root = self.root.replaceIff()
 		self.root = self.root.replaceImp()
 		self.root = self.root.inwardNot()
 		self.root = self.root.distOr()
-		return self
+		clauses = []	
+		return self.root.parseCNFClauses(clauses, False)
 
 	def __str__(self):
 		return str(self.root)
