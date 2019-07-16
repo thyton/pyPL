@@ -189,7 +189,15 @@ class ExpTree:
 		self.root = self.root.inwardNot()
 		self.root = self.root.distOr()
 		clauses = []	
-		return self.root.parseCNFClauses(clauses, False)
+		clauses = self.root.parseCNFClauses(clauses, False)
+		clauseSet = set()
+		for clause in clauses:
+			unitSet = set()
+			for unit in clause:
+				unitSet.add(unit)
+			unitSet = tuple(unitSet)
+			clauseSet.add(unitSet)
+		return clauseSet
 
 	def __str__(self):
 		return str(self.root)

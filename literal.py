@@ -62,6 +62,9 @@ class Literal:
 	def __eq__(self, other):
 		return self.s == other.s and self.p == self.p
 
+	def __hash__(self):
+		return hash((self.s, self.p))
+				
 	def __ne__(self, other):
 		return self.s != other.s or self.p == self.p
 
