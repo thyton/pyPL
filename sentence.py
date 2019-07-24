@@ -5,8 +5,8 @@ Defines sentence
 import numpy as np
 import copy
 import sys
-sys.path.append('../../../')
-from pyPL.literal import Literal
+from .literal import *
+from .exp_tree import * 
 
 class AtomicSentence:
 	"""An atomic sentence consists of 
@@ -39,7 +39,6 @@ class AtomicSentence:
 	def cAnd (self, other):
 		cpSelf = Sentence(self)
 		cpOther = Sentence(copy.deepcopy(other))
-		print(type(cpOther))
 		cpSelf.cAnd(cpOther)
 		return cpSelf
 
@@ -76,22 +75,18 @@ class AtomicSentence:
 		return cp
 
 from pyPL.connective import *
-from pyPL.pns import PNS 
 class Sentence:
 	def __init__(self, obj):
 		try:
-			obj.atom()
 			self.l = obj.l
-
+			if isinstance(obj, Sentence):
+				self.pns = obj.pns	# a queue that represents postfix notation string of of the complex sentence
+			else:
+				self.pns = []
+				self.pns.append(self.l)
 		except AttributeError as e:
-			print("'obj' is not an instance of AtomicSentence")
+			print("'obj' is not an instance of Sentence")
 	
-		if isinstance(obj, Sentence):
-			self.pns = obj.pns	# a queue that represents postfix notation string of of the complex sentence
-		else:
-			self.pns = []
-			self.pns.append(self.l)
-			print(self.pns)
 
 	# logical connectives
 	def cAnd (self, other):
@@ -140,63 +135,10 @@ class Sentence:
 		return self
 
 	def cnf(self):
-		# eliminate Iff
-		replaceIff(self)
-		# eliminate Imp
+		et = ExpTree(self.pns)
+		return et.cnf()
 
-		# move Not inwards to make negative literals
-			
-		form = [] #list of all clauses - a disjunction of literals - in CNF
-		stack = []
-		i = 0
-		while i < len(self.pns):
-		# skim from left to right
-			# distribute and 
-			return form
-		return None
 
-	def replaceIff(self):
-		if len(self.pns) > 0:
-			stack = []
-			i = 0
-			while i < len(self.pns):
-			# skim from left to right
-				if not isinstance(self.pns[i], Conn):
-					stack.append((i,i+1))
-					i +=1
-				elif self.pns[i] == Conn.IFF and len(stack) > 1:
-					PNS.replaceIff(self.pns, stack, i)
-					i = stack[-1][1]
-				else:
-					PNS.combineOperands(self.pns, stack, i)
-					i += 1
-
-	def replaceImp(self):
-		if len(self.pns) > 0:
-			stack = []
-			i = 0
-			while i < len(self.pns):
-			# skim from left to right
-				if not isinstance(self.pns[i], Conn):
-					stack.append((i,i))
-					i +=1
-				elif self.pns[i] == Conn.IMP and len(stack) > 1:
-					PNS.replaceImp(self.pns, stack, i)
-					i = stack[-1][1]
-				else:
-					PNS.combineOperands(self.pns, stack, i)
-					i += 1
-		
-	def inwardNot(self):
-		stack = []
-		i = 0
-		while i < len(self.pns):
-		# skim from left to right
-			return
-	def distAnd(self):
-		return
-
-	# p', 'q', 'imp', 'p', 'not', 'r', 'or', 'iff'
 
 
 

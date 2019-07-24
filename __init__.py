@@ -3,3 +3,4 @@ from .connective import *
 from .sentence import *
 from .infer import *
 from .knowledge_base import *
+from .literal import *
