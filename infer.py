@@ -38,7 +38,7 @@ def resolution(kb, a):
 		- or when two clauses resolve to yield the empty clause
 			KB entails a
 	"""
-	clauses = kb.clauses().union((~a).cnf())	
+	clauses = kb.clauses().union((~copy.deepcopy(a)).cnf())	
 	new = set()
 	while(True):
 		for c1 in clauses:
