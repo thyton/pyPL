@@ -10,7 +10,8 @@ class KnowledgeBase:
 		return self
 
 	def extend(self, resolvents):
-		self.c.union(resolvents)
+		for r in resolvents:
+			self.c.add(r)
 		return self
 
 	def has(self, clause):
