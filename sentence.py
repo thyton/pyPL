@@ -60,6 +60,10 @@ class AtomicSentence:
 		cpSelf.cIff(cpOther)
 		return cpSelf		
 
+	def cnf(self):
+		cpSelf = Sentence(self)
+		return cpSelf.cnf()
+		
 	# fake method to test if an object is of AtomicSentence
 	def atom(self):
 		return 
