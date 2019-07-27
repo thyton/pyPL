@@ -4,6 +4,7 @@ class KnowledgeBase:
 	"""KnowledgeBase represents knowledge in CNF clauses"""
 	def __init__(self, clauses):
 		self.c = clauses
+		self.resolved = set()
 
 	def add(self, clause):
 		self.c.add(clause)
@@ -19,6 +20,12 @@ class KnowledgeBase:
 
 	def clauses(self):
 		return copy.deepcopy(self.c)
+
+	def resolve(self, c1, c2):
+		return tuple([c1, c2]) in self.resolved or tuple([c2,c1]) in self.resolved
+
+	def markResolved(self, c1, c2):
+		return self.resolved.add(tuple([c1,c2]))
 
 	def __eq__(self, clauses):
 		return self.c == clauses

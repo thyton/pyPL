@@ -39,15 +39,25 @@ def resolution(kb, a):
 			KB entails a
 	"""
 	clauses = kb.clauses().union((~copy.deepcopy(a)).cnf())	
+	print(type(kb))
 	new = set()
 	while(True):
 		for c1 in clauses:
 			for c2 in clauses:
-				if c1 is not c2:
-					resolvents = resolve(c1, c2)
-					if () in resolvents:
-						return True
-					new = new.union(resolvents)	
+				if c1 is not c2:		
+					if not kb.resolve(c1,c2):
+						resolvents = resolve(c1, c2)
+						if () in resolvents:
+							return True
+						if kb.has(c1) and kb.has(c2):
+							for r in resolvents:
+								kb.add(r)
+							kb.markResolved(c1,c2)
+						new = new.union(resolvents)	
+				else:
+					print("kb has resolved")
+					print("\t",str([str(u) for u in list(c1)]))
+					print("\t",str([str(u) for u in list(c2)]))
 
 		isNewSubset = True
 		for c in new:
